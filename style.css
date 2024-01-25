@@ -43,15 +43,16 @@
 
 .youtube-player-popup {
     position: fixed;
-    width: 80%;
+    width: 80%; /* Adjust the width as needed */
     left: 50%;
-    top: 0;
-    transform: translateX(-50%) translateY(-100%);
+    top: 50%;
+    transform: translate(-50%, -50%) scale(0.8); /* Scale down to 80% */
     transition: all 400ms ease;
 }
 
-.youtube-player-overlay.active .youtube-player-popup {
-    transform: translate(-50%, 0%);
+.youtube-player-popup iframe {
+    width: 100%;
+    aspect-ratio: 16/9;
 }
 
 .youtube-player-popup iframe {

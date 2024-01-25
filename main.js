@@ -29,12 +29,34 @@ YTLinks.forEach(link => {
     });
 });
 
-YTPlayerOverlay.addEventListener("click", () => {
+function closePopup() {
     // Pause the video using the YouTube API when closing the overlay
-    if (player) {
+    if (player && typeof player.pauseVideo === 'function') {
         player.pauseVideo();
     }
 
+    // Reset the video source to stop playback
+    YTPlayerPopup.src = '';
+
     // Remove the "active" class from the overlay
     YTPlayerOverlay.classList.remove("active");
+}
+
+YTPlayerOverlay.addEventListener("click", (event) => {
+    // Check if the click was outside the popup area
+    if (event.target === YTPlayerOverlay) {
+        closePopup();
+    }
+});
+
+document.addEventListener("keydown", (event) => {
+    // Check if the "Esc" key was pressed
+    if (event.key === "Escape") {
+        closePopup();
+    }
+});
+
+// Handle page reload (F5)
+window.addEventListener('beforeunload', () => {
+    closePopup();
 });
