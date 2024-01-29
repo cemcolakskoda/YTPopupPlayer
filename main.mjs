@@ -1,10 +1,11 @@
-// main.mjs
-import config from './config.js';
+const YTPlayerOverlay = document.querySelector(".youtube-player-overlay");
+const YTLinks = document.querySelectorAll(".youtube-link");
+const YTPlayerPopup = document.querySelector(".youtube-player-popup iframe");
 
 let player; // Variable to store the YouTube player instance
 
 function onYouTubeIframeAPIReady() {
-    player = new YT.Player('YTPlayerPopup', {
+    player = new YT.Player(YTPlayerPopup, {
         events: {
             'onReady': onPlayerReady
         }
@@ -15,22 +16,29 @@ function onPlayerReady(event) {
     // Video is ready to play, but we won't autoplay it
 }
 
-const YTLinks = document.querySelectorAll(".youtube-link");
-const YTPlayerPopup = document.querySelector(".youtube-player-popup iframe");
-
 YTLinks.forEach(link => {
     link.addEventListener("click", () => {
-        const videoId = config.videoSource === 'youtube' ? config.youtubeLinks[link.dataset.link] : config.onedriveLinks[link.dataset.link];
-        const videoLink = config.videoSource === 'youtube' ? `https://www.youtube.com/embed/${videoId}?enablejsapi=1` : videoId;
+        YTPlayerOverlay.classList.add("active");
 
-        document.querySelector(".youtube-player-popup iframe").src = videoLink;
-        YTPlayerPopup.classList.add("active");
+        // Determine the video source (YouTube or OneDrive)
+        const videoSource = link.dataset.source || 'youtube';
+        const videoId = videoSource === 'youtube' ? link.dataset.youtube : link.dataset.onedrive;
+
+        // Build the video link based on the source
+        let videoLink = '';
+        if (videoSource === 'youtube') {
+            videoLink = `https://www.youtube.com/embed/${videoId}?enablejsapi=1`;
+            // Ensure the YouTube API is loaded before creating the player
+            if (typeof YT !== 'undefined' && YT.loaded) {
+                onYouTubeIframeAPIReady();
+            }
+        } else if (videoSource === 'onedrive') {
+            videoLink = videoId;
+        }
+
+        // Set the video link to the iframe
+        YTPlayerPopup.src = videoLink;
     });
-});
-
-YTPlayerPopup.addEventListener("click", () => {
-    YTPlayerPopup.classList.remove("active");
-    closePopup(); // Optionally close the popup when the video is clicked
 });
 
 function closePopup() {
@@ -43,8 +51,15 @@ function closePopup() {
     YTPlayerPopup.src = '';
 
     // Remove the "active" class from the overlay
-    YTPlayerPopup.classList.remove("active");
+    YTPlayerOverlay.classList.remove("active");
 }
+
+YTPlayerOverlay.addEventListener("click", (event) => {
+    // Check if the click was outside the popup area
+    if (event.target === YTPlayerOverlay) {
+        closePopup();
+    }
+});
 
 document.addEventListener("keydown", (event) => {
     // Check if the "Esc" key was pressed
