@@ -75,6 +75,17 @@
             </iframe>
         </div>
     </div>
-    <script type="module" src="main.mjs"></script>
+    <script
+    const authorizationEndpoint = 'https://https://skodacomtr-my.sharepoint.com/personal/cemc_skoda_com_tr/_layouts/15/OAuthAuthorize.aspx';
+    const clientId = '<your-client-id>';
+    const redirectUri = '<your-redirect-uri>';
+    const responseType = 'code';
+
+    const authUrl = `${authorizationEndpoint}?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=${responseType}`;
+
+    window.location.href = authUrl ;
+
+    type="module" src="main.mjs">
+    </script>
 </body>
 </html>

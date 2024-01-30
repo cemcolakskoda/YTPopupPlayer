@@ -1,7 +1,8 @@
 // config.js
-
+const yt = 'youtube';
+const od = 'onedrive';
 const config = {
-    videoSource: 'youtube', // or 'onedrive'
+    videoSource: yt,
     youtubeLinks: {
         video1: '7XcX43q53x0',
         video2: 'Yw7L18u2cQI',
