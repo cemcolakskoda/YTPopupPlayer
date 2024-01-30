@@ -1,3 +1,5 @@
+import config from './config.js';
+
 const YTPlayerOverlay = document.querySelector(".youtube-player-overlay");
 const YTLinks = document.querySelectorAll(".youtube-link");
 const YTPlayerPopup = document.querySelector(".youtube-player-popup iframe");
@@ -19,11 +21,16 @@ function onPlayerReady(event) {
 YTLinks.forEach(link => {
     link.addEventListener("click", () => {
         YTPlayerOverlay.classList.add("active");
-        let videoLink = `https://www.youtube.com/embed/${link.dataset.link}?enablejsapi=1`;
+
+        // Determine the video source (YouTube or OneDrive)
+        const videoId = config.videoSource === 'youtube' ? config.youtubeLinks[link.dataset.link] : config.onedriveLinks[link.dataset.link];
+        const videoLink = config.videoSource === 'youtube' ? `https://www.youtube.com/embed/${videoId}?enablejsapi=1` : videoId;
+
+        // Set the video link to the iframe
         YTPlayerPopup.src = videoLink;
 
         // Ensure the YouTube API is loaded before creating the player
-        if (typeof YT !== 'undefined' && YT.loaded) {
+        if (config.videoSource === 'youtube' && typeof YT !== 'undefined' && YT.loaded) {
             onYouTubeIframeAPIReady();
         }
     });
