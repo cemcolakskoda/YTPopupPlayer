@@ -1,77 +1,51 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-import os
 
 app = Flask(__name__)
-
-# SQLite database setup
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sqlite.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['UPLOAD_FOLDER'] = 'uploads'  # Folder to store uploaded videos
-db_sqlite = SQLAlchemy(app)
+db = SQLAlchemy(app)
 
-# SQLite Video model
-class VideoSQLite(db_sqlite.Model):
-    id = db_sqlite.Column(db_sqlite.Integer, primary_key=True)
-    CategoryId = db_sqlite.Column(db_sqlite.Integer)
-    CategoryName = db_sqlite.Column(db_sqlite.String(255))
-    model = db_sqlite.Column(db_sqlite.String(255))
-    FileId = db_sqlite.Column(db_sqlite.Integer)
-    FileName = db_sqlite.Column(db_sqlite.String(255))
-    CreatedDate = db_sqlite.Column(db_sqlite.String(255))
-    url = db_sqlite.Column(db_sqlite.String(255), nullable=False)
+# Video model
+class Video(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    category_id = db.Column(db.Integer)  # Fix the column definition
+    category_name = db.Column(db.String(255))  # Fix the column definition
+    model = db.Column(db.String(255))
+    file_id = db.Column(db.Integer)
+    file_name = db.Column(db.String(255))
+    created_date = db.Column(db.String(255))
+    url = db.Column(db.String(255))
 
 # Create SQLite tables
-db_sqlite.create_all()
+with app.app_context():
+    db.create_all()
 
-# Route to add a video to the database
 @app.route('/add_video', methods=['POST'])
 def add_video():
-    # Extract data from the request
-    data = request.form
-    category_id = data.get('CategoryId')
-    category_name = data.get('CategoryName')
-    model = data.get('model')
-    file_id = data.get('FileId')
-    file_name = data.get('FileName')
-    created_date = data.get('CreatedDate')
-    url = data.get('url')
+    data = request.get_json()
+    new_video = Video(category_id=data['category_id'],
+                      category_name=data['category_name'],
+                      model=data['model'],
+                      file_id=data['file_id'],
+                      file_name=data['file_name'],
+                      created_date=data['created_date'],
+                      url=data['url'])
+    db.session.add(new_video)
+    db.session.commit()
+    return jsonify({'message': 'Video added successfully'})
 
-    # Create a new VideoSQLite instance
-    new_video = VideoSQLite(
-        CategoryId=category_id,
-        CategoryName=category_name,
-        model=model,
-        FileId=file_id,
-        FileName=file_name,
-        CreatedDate=created_date,
-        url=url
-    )
-
-    # Add the new_video instance to the session
-    db_sqlite.session.add(new_video)
-
-    # Commit the changes to the database
-    db_sqlite.session.commit()
-
-    return jsonify({
-        'message': 'Video added successfully!'
-    })
-
-# Route to get video URLs
-@app.route('/get_video_urls', methods=['GET'])
-def get_video_urls():
-    # Query all video URLs from the SQLite database
-    video_urls_sqlite = [video.url for video in VideoSQLite.query.all()]
-
-    return jsonify({
-        'video_urls_sqlite': video_urls_sqlite,
-    })
-
-# Route to serve videos
-@app.route('/videos/<filename>', methods=['GET'])
-def get_video(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+@app.route('/get_videos', methods=['GET'])
+def get_videos():
+    videos = Video.query.all()
+    video_list = [{'category_id': video.category_id,
+                   'category_name': video.category_name,
+                   'model': video.model,
+                   'file_id': video.file_id,
+                   'file_name': video.file_name,
+                   'created_date': video.created_date,
+                   'url': video.url} for video in videos]
+    return jsonify({'videos': video_list})
 
 if __name__ == '__main__':
     app.run(debug=True)
