@@ -1,8 +1,10 @@
 import config from './config.js';
+import config from './config.json';
 
 const YTPlayerOverlay = document.querySelector(".youtube-player-overlay");
 const YTLinks = document.querySelectorAll(".youtube-link");
 const YTPlayerPopup = document.querySelector(".youtube-player-popup iframe");
+const divTitles = config.divTitles;
 
 let player; // Variable to store the YouTube player instance
 
@@ -66,4 +68,22 @@ document.addEventListener("keydown", (event) => {
 // Handle page reload (F5)
 window.addEventListener('beforeunload', () => {
     closePopup();
+});
+
+// Dynamically generate div elements with titles
+divTitles.forEach(title => {
+const divElement = document.createElement('div');
+    divElement.className = 'youtube-link';
+    divElement.dataset.link = title; // Assuming you want to use the title as the link
+    divElement.innerHTML = `
+        <div class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <!-- Your SVG path here -->
+            </svg>
+        </div>
+        ${title}
+    `;
+
+    // Add the div element to the container
+    divContainer.appendChild(divElement);
 });
